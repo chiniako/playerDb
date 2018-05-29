@@ -7,6 +7,7 @@ import android.support.v4.app.ShareCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.TextView;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -20,11 +21,10 @@ import java.util.List;
 import java.util.Map;
 
 public class DbWrapper implements DaoAccess {
-
+    final static int PICKFILE_RESULT_CODE = 100;
     final static String dbLocation = "";
     final static String dbFileName = "players.db";
     final static String dbFileColumnSeperator = ";";
-    final static int dbFileColumnCount = 4;
     private static DbWrapper pl = null;
     private static Map<Integer, Player> dbStore = null;
     private static AppCompatActivity currentActivity = null;
@@ -60,7 +60,6 @@ public class DbWrapper implements DaoAccess {
         player1.setPlayerName("Stephan");
         player1.setJoinedDate(232343323);
         player1.setEmail("stephan.king@kingstown.com");
-        String key1Value1 = "Stephan";
 
         Player player2 = new Player();
         player2.setPlayerId(20);
@@ -80,7 +79,6 @@ public class DbWrapper implements DaoAccess {
         player1.setPlayerName("Stephan");
         player1.setJoinedDate(232343323);
         player1.setEmail("stephan.king@kingstown.com");
-        String key1Value1 = "Stephan";
 
         Player player2 = new Player();
         player2.setPlayerId(20);
@@ -108,7 +106,7 @@ public class DbWrapper implements DaoAccess {
                 BufferedReader br = new BufferedReader(new FileReader(file));
                 String line;
 
-                Player nextPlayer = null;
+                Player nextPlayer;
                 while ((line = br.readLine()) != null) {
                     if (line.indexOf(dbFileColumnSeperator) != -1) {
                         nextPlayer = new Player();
@@ -130,11 +128,6 @@ public class DbWrapper implements DaoAccess {
                 Log.e("sma", "DbWrapper exception, reading db file: " + e.getLocalizedMessage());
             }
 
-            //Find the view by its id
-            //TextView tv = (TextView)findViewById(R.id.text_view);
-
-            //Set the text
-            //tv.setText(text.toString());
         }
     }
 
@@ -196,6 +189,18 @@ public class DbWrapper implements DaoAccess {
 
     }
 
+    public void importDb(){
+
+        if (currentActivity != null) {
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.setType("*/*");
+            currentActivity.startActivityForResult(intent, PICKFILE_RESULT_CODE);
+        }
+        else {
+            Log.e("sma", "Unexpected error at storing db file: Current activity undefined!");
+        }
+
+    }
 
     @Override
     public void initDb() {
@@ -281,7 +286,13 @@ public class DbWrapper implements DaoAccess {
 
     @Override
     public void deletePlayer(Player player) {
-
+        if (!this.dbStore.containsKey(player.getPlayerId())) {
+            showTextInInfoField("Deletion failed: player record not found!");
+        }
+        else {
+            this.dbStore.remove(player.getPlayerId());
+            Log.e("sma", "Player record removed from database: "+player.toRecordString());
+        }
     }
 
     private boolean isMatch(Player record, Player filter) {
@@ -301,6 +312,12 @@ public class DbWrapper implements DaoAccess {
         }
 
         return matchId && matchName && matchDate && matchEmail;
+    }
+
+
+    private void showTextInInfoField(String text) {
+        TextView infoField = currentActivity.findViewById(R.id.textView);
+        infoField.setText(text);
     }
 
 }
