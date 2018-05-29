@@ -1,5 +1,6 @@
 package gw.db.chi.nl.playerdbapp;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -11,9 +12,11 @@ import android.widget.TextView;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -131,7 +134,6 @@ public class DbWrapper implements DaoAccess {
         }
     }
 
-
     public void storeDbInLocalFile(){
 
         StringWriter fileContentStream = new StringWriter(0);
@@ -203,8 +205,37 @@ public class DbWrapper implements DaoAccess {
     }
 
     @Override
-    public void initDb() {
+    public void initDbFromUri(Uri dataFileUri, ContentResolver cr) {
         //storeDbInLocalFile(getStubData());
+        dbStore.clear();
+        try {
+            BufferedReader br = new BufferedReader(
+                    new InputStreamReader(
+                            cr.openInputStream(dataFileUri)));
+            String line;
+
+            Player nextPlayer;
+            while ((line = br.readLine()) != null) {
+                if (line.indexOf(dbFileColumnSeperator) != -1) {
+                    nextPlayer = new Player();
+                    String[] columns = line.split(dbFileColumnSeperator);
+                    if (columns.length == 4) {
+                        nextPlayer.setPlayerId(Integer.valueOf(columns[0]));
+                        nextPlayer.setPlayerName(columns[1]);
+                        nextPlayer.setJoinedDate(Long.valueOf(columns[2]));
+                        nextPlayer.setEmail(columns[3]);
+                        dbStore.put(nextPlayer.getPlayerId(), nextPlayer);
+                    } else {
+                        Log.e("sma", "DbWrapper exception, reading db file, unexpected amount of columns found: : " + columns.length);
+                    }
+                }
+            }
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
