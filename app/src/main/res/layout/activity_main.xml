@@ -55,11 +55,11 @@
                     android:inputType="textPersonName" />
 
                 <Button
-                    android:id="@+id/btnShowAll"
+                    android:id="@+id/btnSave"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Show All" />
+                    android:text="Update" />
 
             </TableRow>
 
@@ -116,6 +116,13 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Reset" />
+
+            <Button
+                android:id="@+id/btnShowAll"
+                android:layout_width="169dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Show All" />
 
             <Button
                 android:id="@+id/btnSettings"

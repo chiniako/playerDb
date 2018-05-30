@@ -26,6 +26,7 @@ import android.widget.TextView;
 import org.apache.commons.lang3.StringUtils;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -52,27 +53,75 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        Button saveBtn = findViewById(R.id.btnAdd);
-        saveBtn.setOnClickListener(new View.OnClickListener() {
+        Button addBtn = findViewById(R.id.btnAdd);
+        addBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 startActivity(
                         new Intent(MainActivity.this, AddRecordActivity.class)
                 );
             }
         });
 
+        Button saveBtn = findViewById(R.id.btnSave);
+        saveBtn.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+
+                if (allFieldsFilled()) {
+
+                    DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            switch (which){
+                                case DialogInterface.BUTTON_POSITIVE:
+
+                                    //Yes button clicked
+                                    List<EditText> formFields = getAllFormFields();
+                                    Player currentPlayer = new Player();
+                                    currentPlayer.setPlayerId(Integer.valueOf(formFields.get(0).getText().toString()));
+                                    currentPlayer.setPlayerName(formFields.get(1).getText().toString());
+                                    currentPlayer.setJoinedDate(Long.valueOf(formFields.get(2).getText().toString()));
+                                    currentPlayer.setEmail(formFields.get(3).getText().toString());
+
+                                    DbWrapper.daoAccess(MainActivity.this).updatePlayer(currentPlayer);
+                                    searchWithFilter();
+
+                                    break;
+
+                                case DialogInterface.BUTTON_NEGATIVE:
+
+                                    //No button clicked
+                                    // Dont't do anything, just close the dialogue
+
+                                    break;
+                            }
+                        }
+                    };
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext(), android.R.style.Theme_Material_Light_Dialog_Alert);
+                    builder.setMessage("Are you sure?")
+                            .setPositiveButton("Yes", dialogClickListener)
+                            .setNegativeButton("No", dialogClickListener).show();
+
+                }
+            }
+        });
+
+
         Button settingsBtn = findViewById(R.id.btnSettings);
         settingsBtn.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View view) {
                 startActivity(
-                    new Intent(MainActivity.this, SettingsActivity.class)
+                        new Intent(MainActivity.this, SettingsActivity.class)
                 );
                 //DbWrapper.daoAccess(MainActivity.this).exportDb();
             }
         });
+
 
         Button showAllBtn = findViewById(R.id.btnShowAll);
         showAllBtn.setOnClickListener(new View.OnClickListener() {
@@ -176,6 +225,7 @@ public class MainActivity extends AppCompatActivity {
                                 else {
                                     DbWrapper.daoAccess(MainActivity.this).deletePlayer(currentPlayerId);
                                     resetFields();
+                                    searchWithFilter();
                                     infoField.setText("Player record deleted succesfully");
                                 }
 
@@ -228,10 +278,6 @@ public class MainActivity extends AppCompatActivity {
         dateField.setBackgroundColor(COLOR_BG_DEFAULT);
         emailField.setText("");
         emailField.setBackgroundColor(COLOR_BG_DEFAULT);
-    }
-
-    private boolean allFieldFilled() {
-        return idFieldEmpty && nameFieldEmpty && dateFieldEmpty && emailFieldEmpty;
     }
 
     @Override
@@ -574,5 +620,28 @@ public class MainActivity extends AppCompatActivity {
         Button findBtn = findViewById(R.id.btnFind);
         findBtn.performClick();
     }
+
+    private List<EditText> getAllFormFields() {
+        EditText idField = findViewById(R.id.editTextId);
+        EditText nameField = findViewById(R.id.editTextName);
+        EditText dateField = findViewById(R.id.editDate);
+        EditText emailField = findViewById(R.id.editEmail);
+        List<EditText> formFields = new ArrayList<EditText>();
+        formFields.add(idField);
+        formFields.add(nameField);
+        formFields.add(dateField);
+        formFields.add(emailField);
+        return formFields;
+    }
+
+    private boolean allFieldsFilled() {
+        for (EditText fld : getAllFormFields()) {
+            if (fld.getText().length() == 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 
 }

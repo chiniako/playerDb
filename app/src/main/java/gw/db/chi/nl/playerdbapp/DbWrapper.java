@@ -272,7 +272,15 @@ public class DbWrapper implements DaoAccess {
 
     @Override
     public void updatePlayer(Player player) {
-
+        if (!getDbStore().containsKey(player.getPlayerId())) {
+            showTextInInfoField("Update failed, record with id {"+player.getPlayerId()+"} not found!");
+        }
+        else {
+            String toBeUpdated = getDbStore().get(player.getPlayerId()).toRecordString();
+            getDbStore().remove(player.getPlayerId());
+            getDbStore().put(player.getPlayerId(), player);
+            Log.e("sma", "Player record updated in database: "+player.toRecordString());
+        }
     }
 
     @Override
