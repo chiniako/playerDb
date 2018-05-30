@@ -266,6 +266,11 @@ public class DbWrapper implements DaoAccess {
     }
 
     @Override
+    public boolean playerRecordExists(int playerId) {
+        return getDbStore().containsKey(playerId);
+    }
+
+    @Override
     public void updatePlayer(Player player) {
 
     }

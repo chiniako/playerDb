@@ -7,6 +7,8 @@ import java.util.List;
 
 public interface DaoAccess {
 
+    boolean playerRecordExists(int playerId);
+
     boolean initDbFromUri(Uri dataFileUri, ContentResolver cr);
 
     void insertSinglePlayer(Player Player);
