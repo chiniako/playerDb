@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 public class DbWrapper implements DaoAccess {
-    final static int PICKFILE_RESULT_CODE = 100;
+
     final static String dbLocation = "";
     final static String dbFileName = "players.db";
     final static String dbFileColumnSeperator = ";";
@@ -40,59 +40,24 @@ public class DbWrapper implements DaoAccess {
 
     public static DbWrapper daoAccess(AppCompatActivity activity) {
         if (pl == null) {
+            dbStore = new HashMap<Integer, Player>();
             currentActivity = activity;
             pl = new DbWrapper();
         }
         return pl;
     }
 
+    protected synchronized Map<Integer, Player> getDbStore() {
+        return dbStore;
+    }
+
+
     private void readFromFile() {
-        dbStore = new HashMap<Integer, Player>();
         try {
             readDbFromLocalFile();
         } catch (Exception e) {
             Log.e("sma", "DbWrapper exception, general exception at reading or writing db file: "+e.getLocalizedMessage());
         }
-    }
-
-    private void readFromStub() {
-        dbStore = new HashMap<Integer, Player>();
-
-        Player player1 = new Player();
-        player1.setPlayerId(10);
-        player1.setPlayerName("Stephan");
-        player1.setJoinedDate(232343323);
-        player1.setEmail("stephan.king@kingstown.com");
-
-        Player player2 = new Player();
-        player2.setPlayerId(20);
-        player2.setPlayerName("Medea");
-        player2.setJoinedDate(532563323);
-        player2.setEmail("medea@kingstown.com");
-
-        dbStore.put(player1.getPlayerId(), player1);
-        dbStore.put(player2.getPlayerId(), player2);
-    }
-
-    private Map<Integer, Player> getStubData() {
-        Map<Integer, Player> stubStore = new HashMap<Integer, Player>();
-
-        Player player1 = new Player();
-        player1.setPlayerId(10);
-        player1.setPlayerName("Stephan");
-        player1.setJoinedDate(232343323);
-        player1.setEmail("stephan.king@kingstown.com");
-
-        Player player2 = new Player();
-        player2.setPlayerId(20);
-        player2.setPlayerName("Medea");
-        player2.setJoinedDate(532563323);
-        player2.setEmail("medea@kingstown.com");
-
-        stubStore.put(player1.getPlayerId(), player1);
-        stubStore.put(player2.getPlayerId(), player2);
-
-        return stubStore;
     }
 
     public void readDbFromLocalFile() throws Exception {
@@ -119,9 +84,9 @@ public class DbWrapper implements DaoAccess {
                             nextPlayer.setPlayerName(columns[1]);
                             nextPlayer.setJoinedDate(Long.valueOf(columns[2]));
                             nextPlayer.setEmail(columns[3]);
-                            this.dbStore.put(nextPlayer.getPlayerId(), nextPlayer);
+                            getDbStore().put(nextPlayer.getPlayerId(), nextPlayer);
                         } else {
-                            Log.e("sma", "DbWrapper exception, reading db file, unexpected amount of columns found: : " + columns.length);
+                            Log.e("sma", "DbWrapper exception - readDbFromFile, reading db file, unexpected amount of columns found: : " + columns.length);
                         }
                     }
                 }
@@ -146,8 +111,8 @@ public class DbWrapper implements DaoAccess {
 
                 outputStream = currentActivity.openFileOutput(dbFileName, Context.MODE_PRIVATE);
 
-                for (Integer nextId : this.dbStore.keySet()) {
-                    nextPlayer = this.dbStore.get(nextId);
+                for (Integer nextId : getDbStore().keySet()) {
+                    nextPlayer = getDbStore().get(nextId);
                     fileContentStream.append(nextPlayer.toRecordString(dbFileColumnSeperator));
                     fileContentStream.append("\n");
                 }
@@ -191,23 +156,9 @@ public class DbWrapper implements DaoAccess {
 
     }
 
-    public void importDb(){
-
-        if (currentActivity != null) {
-            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-            intent.setType("*/*");
-            currentActivity.startActivityForResult(intent, PICKFILE_RESULT_CODE);
-        }
-        else {
-            Log.e("sma", "Unexpected error at storing db file: Current activity undefined!");
-        }
-
-    }
-
     @Override
-    public void initDbFromUri(Uri dataFileUri, ContentResolver cr) {
-        //storeDbInLocalFile(getStubData());
-        dbStore.clear();
+    public boolean initDbFromUri(Uri dataFileUri, ContentResolver cr) {
+        getDbStore().clear();
         try {
             BufferedReader br = new BufferedReader(
                     new InputStreamReader(
@@ -218,46 +169,50 @@ public class DbWrapper implements DaoAccess {
             while ((line = br.readLine()) != null) {
                 if (line.indexOf(dbFileColumnSeperator) != -1) {
                     nextPlayer = new Player();
+                    Log.e("sma", "initDbFromUri: next line to be imported: "+line);
                     String[] columns = line.split(dbFileColumnSeperator);
                     if (columns.length == 4) {
                         nextPlayer.setPlayerId(Integer.valueOf(columns[0]));
                         nextPlayer.setPlayerName(columns[1]);
                         nextPlayer.setJoinedDate(Long.valueOf(columns[2]));
                         nextPlayer.setEmail(columns[3]);
-                        dbStore.put(nextPlayer.getPlayerId(), nextPlayer);
+                        getDbStore().put(nextPlayer.getPlayerId(), nextPlayer);
                     } else {
-                        Log.e("sma", "DbWrapper exception, reading db file, unexpected amount of columns found: : " + columns.length);
+                        Log.e("sma", "DbWrapper exception - initDbFromUri, reading db file, unexpected amount of columns found: : " + columns.length);
+                        return false;
                     }
                 }
             }
 
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            Log.e("sma", "DbWrapper exception - FileNotFound");
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e("sma", "DbWrapper exception - IO");
         }
+
+        return true;
     }
 
     @Override
     public void insertSinglePlayer(Player player) {
-        if (dbStore.containsKey(player.getPlayerId())) {
+        if (getDbStore().containsKey(player.getPlayerId())) {
             Log.e("sma", "DbWrapper exception, adding player record failed, unique constraint!");
         }
         else {
-            dbStore.put(player.getPlayerId(), player);
+            getDbStore().put(player.getPlayerId(), player);
         }
     }
     @Override
     public void insertOrUpdateSinglePlayer(Player player) {
-        if (dbStore.containsKey(player.getPlayerId())) {
-            Log.e("sma", "Old player record: "+dbStore.get(player.getPlayerId()).toRecordString());
+        if (getDbStore().containsKey(player.getPlayerId())) {
+            Log.e("sma", "Old player record: "+getDbStore().get(player.getPlayerId()).toRecordString());
             Log.e("sma", "New player record: "+player.toRecordString());
-            dbStore.remove(player.getPlayerId());
-            dbStore.put(player.getPlayerId(), player);
+            getDbStore().remove(player.getPlayerId());
+            getDbStore().put(player.getPlayerId(), player);
             Log.e("sma", "Old player record overwritten with new one");
         }
         else {
-            dbStore.put(player.getPlayerId(), player);
+            getDbStore().put(player.getPlayerId(), player);
         }
     }
 
@@ -272,9 +227,9 @@ public class DbWrapper implements DaoAccess {
 
         Player nextPlayer;
         Player resultRow;
-        for (Integer nextId : dbStore.keySet()) {
+        for (Integer nextId : getDbStore().keySet()) {
             resultRow = new Player();
-            nextPlayer = dbStore.get(nextId);
+            nextPlayer = getDbStore().get(nextId);
             resultRow.setPlayerId(nextId);
             resultRow.setPlayerName(nextPlayer.getPlayerName());
             resultRow.setJoinedDate(nextPlayer.getJoinedDate());
@@ -290,10 +245,10 @@ public class DbWrapper implements DaoAccess {
 
         Player nextPlayer;
         Player resultRow;
-        for (Integer nextId : dbStore.keySet()) {
-            if (isMatch(dbStore.get(nextId), filter)) {
+        for (Integer nextId : getDbStore().keySet()) {
+            if (isMatch(getDbStore().get(nextId), filter)) {
                 resultRow = new Player();
-                nextPlayer = dbStore.get(nextId);
+                nextPlayer = getDbStore().get(nextId);
                 resultRow.setPlayerId(nextId);
                 resultRow.setPlayerName(nextPlayer.getPlayerName());
                 resultRow.setJoinedDate(nextPlayer.getJoinedDate());
@@ -307,7 +262,7 @@ public class DbWrapper implements DaoAccess {
 
     @Override
     public Player fetchOnePlayerById(int playerId) {
-        return this.dbStore.get(playerId);
+        return getDbStore().get(playerId);
     }
 
     @Override
@@ -316,13 +271,14 @@ public class DbWrapper implements DaoAccess {
     }
 
     @Override
-    public void deletePlayer(Player player) {
-        if (!this.dbStore.containsKey(player.getPlayerId())) {
+    public void deletePlayer(Integer recordId) {
+        if (!getDbStore().containsKey(recordId)) {
             showTextInInfoField("Deletion failed: player record not found!");
         }
         else {
-            this.dbStore.remove(player.getPlayerId());
-            Log.e("sma", "Player record removed from database: "+player.toRecordString());
+            String toBeRemoved = getDbStore().get(recordId).toRecordString();
+            getDbStore().remove(recordId);
+            Log.e("sma", "Player record removed from database: "+toBeRemoved);
         }
     }
 

@@ -3,7 +3,6 @@ package gw.db.chi.nl.playerdbapp;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -22,7 +21,6 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
@@ -41,12 +39,12 @@ public class MainActivity extends AppCompatActivity {
         initUi();
 
         // setup the table
-        searchResultTableLayout =(TableLayout) findViewById(R.id.tableSearchResults);
+        searchResultTableLayout = findViewById(R.id.tableSearchResults);
         searchResultTableLayout.setStretchAllColumns(true);
 
         COLOR_BG_DEFAULT =findViewById(R.id.editTextId).getDrawingCacheBackgroundColor();
 
-        Toolbar toolbar =(Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         Button saveBtn = findViewById(R.id.btnSave);
@@ -54,15 +52,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                TextView infoField =(TextView) findViewById(R.id.textView);
+                TextView infoField = findViewById(R.id.textView);
                 if (!allFieldFilled()) {
                     infoField.setText("Record cannot be added/modified, all fields must be filled in!");
                 } else {
                     DbWrapper.daoAccess(MainActivity.this).storeDbInLocalFile();
-                    EditText idField =(EditText) findViewById(R.id.editTextId);
-                    EditText nameField =(EditText) findViewById(R.id.editTextName);
-                    EditText dateField =(EditText) findViewById(R.id.editDate);
-                    EditText emailField =(EditText) findViewById(R.id.editEmail);
+                    EditText idField = findViewById(R.id.editTextId);
+                    EditText nameField = findViewById(R.id.editTextName);
+                    EditText dateField = findViewById(R.id.editDate);
+                    EditText emailField = findViewById(R.id.editEmail);
 
                     Player newPlayer =new Player();
                     newPlayer.setPlayerId(
@@ -96,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        FloatingActionButton showAllBtn =(FloatingActionButton) findViewById(R.id.btnShowAll);
+        Button showAllBtn = findViewById(R.id.btnShowAll);
         showAllBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -119,19 +117,9 @@ public class MainActivity extends AppCompatActivity {
         resetBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                EditText idField =(EditText)findViewById(R.id.editTextId);
-                EditText nameField =(EditText)findViewById(R.id.editTextName);
-                EditText dateField =(EditText)findViewById(R.id.editDate);
-                EditText emailField =(EditText)findViewById(R.id.editEmail);
-
-                idField.setText("");
-                idField.setBackgroundColor(COLOR_BG_DEFAULT);
-                nameField.setText("");
-                nameField.setBackgroundColor(COLOR_BG_DEFAULT);
-                dateField.setText("");
-                dateField.setBackgroundColor(COLOR_BG_DEFAULT);
-                emailField.setText("");
-                emailField.setBackgroundColor(COLOR_BG_DEFAULT);
+                resetFields();
+                Button findBtn = findViewById(R.id.btnFind);
+                findBtn.performClick();
             }
         });
 
@@ -141,10 +129,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                EditText idField =(EditText)findViewById(R.id.editTextId);
-                EditText nameField =(EditText)findViewById(R.id.editTextName);
-                EditText dateField =(EditText)findViewById(R.id.editDate);
-                EditText emailField =(EditText)findViewById(R.id.editEmail);
+                EditText idField = findViewById(R.id.editTextId);
+                EditText nameField = findViewById(R.id.editTextName);
+                EditText dateField = findViewById(R.id.editDate);
+                EditText emailField = findViewById(R.id.editEmail);
 
                 Player newPlayer =new Player();
                 newPlayer.setPlayerId(idField.getText().length() > 0 ?
@@ -164,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
                         ""
                 );
 
-                List<Player> searchResult =DbWrapper.daoAccess(MainActivity.this).findPlayers(newPlayer);
+                List<Player> searchResult = DbWrapper.daoAccess(MainActivity.this).findPlayers(newPlayer);
 
                 if (searchResult.size() ==1) {
 
@@ -184,18 +172,60 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        Button deleteBtn = findViewById(R.id.btnDel);
+        deleteBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                EditText idField = findViewById(R.id.editTextId);
+                Integer currentPlayerId = idField.getText().length() > 0 ?
+                        Integer.valueOf(idField.getText().toString()) :
+                        0;
+
+                TextView infoField = findViewById(R.id.textView);
+
+                if (currentPlayerId == 0) {
+                    Log.e("sma", "MainActivity deletePlayer exception: player Id undefined");
+                    infoField.setText("Error: player could not be removed, player Id undefined!");
+                }
+                else {
+                    DbWrapper.daoAccess(MainActivity.this).deletePlayer(currentPlayerId);
+                    resetFields();
+                    infoField.setText("Player record deleted succesfully");
+                }
+
+            }
+        });
+
     }
 
 
     private void initUi() {
         //setFindFunction(false);
-        idFieldEmpty =true;
-        nameFieldEmpty =true;
-        dateFieldEmpty =true;
-        emailFieldEmpty =true;
+        idFieldEmpty = true;
+        nameFieldEmpty = true;
+        dateFieldEmpty = true;
+        emailFieldEmpty = true;
         setSaveFunction(false);
         addTextWatchersToForm();
 
+    }
+
+
+    private void resetFields() {
+        EditText idField = findViewById(R.id.editTextId);
+        EditText nameField = findViewById(R.id.editTextName);
+        EditText dateField = findViewById(R.id.editDate);
+        EditText emailField = findViewById(R.id.editEmail);
+
+        idField.setText("");
+        idField.setBackgroundColor(COLOR_BG_DEFAULT);
+        nameField.setText("");
+        nameField.setBackgroundColor(COLOR_BG_DEFAULT);
+        dateField.setText("");
+        dateField.setBackgroundColor(COLOR_BG_DEFAULT);
+        emailField.setText("");
+        emailField.setBackgroundColor(COLOR_BG_DEFAULT);
     }
 
     private boolean allFieldFilled() {
@@ -240,14 +270,14 @@ public class MainActivity extends AppCompatActivity {
 
         textSize =(int) getResources().getDimension(R.dimen.font_size_verysmall);
         smallTextSize =(int) getResources().getDimension(R.dimen.font_size_small);
-        mediumTextSize =(int) getResources().getDimension(R.dimen.font_size_medium);
+        //mediumTextSize =(int) getResources().getDimension(R.dimen.font_size_medium);
 
         SimpleDateFormat dateFormat =new SimpleDateFormat("dd MMM, yyyy");
-        DecimalFormat decimalFormat =new DecimalFormat("0.00");
+        //DecimalFormat decimalFormat =new DecimalFormat("0.00");
 
         int rows =data.size();
         getSupportActionBar().setTitle("Spelers (" + String.valueOf(rows) + ")");
-        TextView textSpacer =null;
+        TextView textSpacer;
 
         searchResultTableLayout.removeAllViews();
 
@@ -465,7 +495,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void addTextWatchersToForm() {
-        EditText idField =(EditText) findViewById(R.id.editTextId);
+        EditText idField = findViewById(R.id.editTextId);
         idField.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}

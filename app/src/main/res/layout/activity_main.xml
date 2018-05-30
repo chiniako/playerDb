@@ -14,60 +14,106 @@
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
+            android:layout_height="wrap_content"
             android:background="?attr/colorPrimary"
             app:popupTheme="@style/AppTheme.PopupOverlay" />
 
-        <EditText
-            android:id="@+id/editTextId"
+        <TableLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ems="10"
-            android:hint="Player id"
-            android:inputType="number" />
+            android:layout_height="197dp">
 
-        <EditText
-            android:id="@+id/editTextName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ems="10"
-            android:hint="Name"
-            android:inputType="textPersonName" />
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" >
 
-        <EditText
-            android:id="@+id/editDate"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ems="10"
-            android:hint="Date"
-            android:inputType="date" />
+                <EditText
+                    android:id="@+id/editTextId"
+                    android:layout_width="254dp"
+                    android:layout_height="match_parent"
+                    android:ems="10"
+                    android:hint="Player id"
+                    android:inputType="number" />
 
-        <EditText
-            android:id="@+id/editEmail"
+                <Button
+                    android:id="@+id/btnFind"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Find" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" >
+
+                <EditText
+                    android:id="@+id/editTextName"
+                    android:layout_width="284dp"
+                    android:layout_height="match_parent"
+                    android:ems="10"
+                    android:hint="Name"
+                    android:inputType="textPersonName" />
+
+                <Button
+                    android:id="@+id/btnShowAll"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Show All" />
+
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" >
+
+                <EditText
+                    android:id="@+id/editDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:ems="10"
+                    android:hint="Date"
+                    android:inputType="date" />
+
+                <Button
+                    android:id="@+id/btnSave"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Save" />
+
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" >
+
+                <EditText
+                    android:id="@+id/editEmail"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:ems="10"
+                    android:hint="Email"
+                    android:inputType="textPersonName|textWebEmailAddress" />
+
+                <Button
+                    android:id="@+id/btnDel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Delete" />
+            </TableRow>
+        </TableLayout>
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ems="10"
-            android:hint="Email"
-            android:inputType="textPersonName|textWebEmailAddress" />
+            android:layout_height="match_parent"
+            android:orientation="vertical"></LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="38dp"
             android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/btnFind"
-                android:layout_width="59dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Find" />
-
-            <Button
-                android:id="@+id/btnSave"
-                android:layout_width="64dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Save" />
 
             <Button
                 android:id="@+id/btnReset"
@@ -88,7 +134,7 @@
             android:id="@+id/ScrollViewTable"
             style="@android:style/Widget.Material.Light.ScrollView"
             android:layout_width="match_parent"
-            android:layout_height="187dp"
+            android:layout_height="290dp"
             tools:background="?attr/colorButtonNormal">
 
             <TableLayout
@@ -102,20 +148,8 @@
         <TextView
             android:id="@+id/textView"
             android:layout_width="match_parent"
-            android:layout_height="47dp" />
+            android:layout_height="104dp" />
 
     </android.support.design.widget.AppBarLayout>
-
-    <include
-        android:id="@+id/include"
-        layout="@layout/content_main" />
-
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/btnShowAll"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/fab_margin"
-        app:srcCompat="@android:drawable/ic_dialog_email" />
 
 </android.support.design.widget.CoordinatorLayout>
