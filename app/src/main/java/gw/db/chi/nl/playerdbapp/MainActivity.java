@@ -23,16 +23,30 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+
+import gw.db.chi.nl.playerdbapp.dao.entities.Player;
+import gw.db.chi.nl.playerdbapp.utils.OrmUtils;
+import gw.db.chi.nl.playerdbapp.validation.DateTextWatcher;
 
 public class MainActivity extends AppCompatActivity {
 
     static int COLOR_BG_DEFAULT =-1;
     private TableLayout searchResultTableLayout;
+
+    @Override
+    protected void onStart() {
+        searchWithFilter();
+        super.onStart();
+    }
+
+    @Override
+    public void onAttachedToWindow() {
+        super.onAttachedToWindow();
+    }
+
     private boolean idFieldEmpty =false, nameFieldEmpty =false, dateFieldEmpty =false, emailFieldEmpty =false;
 
     @Override
@@ -58,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 startActivity(
-                        new Intent(MainActivity.this, AddRecordActivity.class)
+                    new Intent(MainActivity.this, AddRecordActivity.class)
                 );
             }
         });
@@ -69,42 +83,52 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
+                TextView infoField = findViewById(R.id.textView);
+
                 if (allFieldsFilled()) {
 
-                    DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            switch (which){
-                                case DialogInterface.BUTTON_POSITIVE:
+                    EditText emailAddressField = MainActivity.this.findViewById(R.id.editEmail);
+                    if (!android.util.Patterns.EMAIL_ADDRESS.matcher(emailAddressField.getText()).matches()) {
+                        infoField.setText("Error: invalid email address!");
+                    }
+                    else {
+                        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                switch (which) {
+                                    case DialogInterface.BUTTON_POSITIVE:
 
-                                    //Yes button clicked
-                                    List<EditText> formFields = getAllFormFields();
-                                    Player currentPlayer = new Player();
-                                    currentPlayer.setPlayerId(Integer.valueOf(formFields.get(0).getText().toString()));
-                                    currentPlayer.setPlayerName(formFields.get(1).getText().toString());
-                                    currentPlayer.setJoinedDate(Long.valueOf(formFields.get(2).getText().toString()));
-                                    currentPlayer.setEmail(formFields.get(3).getText().toString());
+                                        //Yes button clicked
+                                        List<EditText> formFields = getAllFormFields();
+                                        Player currentPlayer = new Player();
+                                        currentPlayer.setPlayerId(Integer.valueOf(formFields.get(0).getText().toString()));
+                                        currentPlayer.setPlayerName(formFields.get(1).getText().toString());
+                                        currentPlayer.setJoinedDate(OrmUtils.dateStringToLong(formFields.get(2).getText().toString()));
+                                        currentPlayer.setEmail(formFields.get(3).getText().toString());
 
-                                    DbWrapper.daoAccess(MainActivity.this).updatePlayer(currentPlayer);
-                                    searchWithFilter();
+                                        DbWrapper.daoAccess(MainActivity.this).updatePlayer(currentPlayer);
+                                        searchWithFilter();
 
-                                    break;
+                                        break;
 
-                                case DialogInterface.BUTTON_NEGATIVE:
+                                    case DialogInterface.BUTTON_NEGATIVE:
 
-                                    //No button clicked
-                                    // Dont't do anything, just close the dialogue
+                                        //No button clicked
+                                        // Dont't do anything, just close the dialogue
 
-                                    break;
+                                        break;
+                                }
                             }
-                        }
-                    };
+                        };
 
-                    AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext(), android.R.style.Theme_Material_Light_Dialog_Alert);
-                    builder.setMessage("Are you sure?")
-                            .setPositiveButton("Yes", dialogClickListener)
-                            .setNegativeButton("No", dialogClickListener).show();
-
+                        AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext(), android.R.style.Theme_Material_Light_Dialog_Alert);
+                        builder.setMessage("Are you sure?")
+                                .setPositiveButton("Yes", dialogClickListener)
+                                .setNegativeButton("No", dialogClickListener).show();
+                    }
+                }
+                else {
+                    infoField.setText("Error: all fields must be filled in!");
                 }
             }
         });
@@ -173,7 +197,7 @@ public class MainActivity extends AppCompatActivity {
                         ""
                 );
                 newPlayer.setJoinedDate(dateField.getText().length() > 0 ?
-                        Long.valueOf(dateField.getText().toString()) :
+                        OrmUtils.dateStringToLong(dateField.getText().toString()) :
                         0
                 );
                 newPlayer.setEmail(emailField.getText().length() > 0 ?
@@ -189,7 +213,7 @@ public class MainActivity extends AppCompatActivity {
                     idField.setBackgroundColor(Color.GRAY);
                     nameField.setText(searchResult.get(0).getPlayerName());
                     nameField.setBackgroundColor(Color.GRAY);
-                    dateField.setText(Long.toString(searchResult.get(0).getJoinedDate()) );
+                    dateField.setText(OrmUtils.dateLongToString(searchResult.get(0).getJoinedDate()));
                     dateField.setBackgroundColor(Color.GRAY);
                     emailField.setText(searchResult.get(0).getEmail());
                     emailField.setBackgroundColor(Color.GRAY);
@@ -249,10 +273,11 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Search directly after the app opens
-        searchWithFilter();
+        EditText dateField = findViewById(R.id.editDate);
+        dateField.addTextChangedListener(new DateTextWatcher());
 
     }
+
 
     private void initUi() {
         //setFindFunction(false);
@@ -506,7 +531,7 @@ public class MainActivity extends AppCompatActivity {
                             ((EditText)findViewById(R.id.editTextName)).
                                     setText( resultRecord.getPlayerName() );
                             ((EditText)findViewById(R.id.editDate)).
-                                    setText( Long.toString(resultRecord.getJoinedDate()) );
+                                    setText( OrmUtils.dateLongToString(resultRecord.getJoinedDate()) );
                             ((EditText)findViewById(R.id.editEmail)).
                                     setText( resultRecord.getEmail() );
                             //Log.e("sma", "Table button pressed: "+text);
@@ -642,6 +667,5 @@ public class MainActivity extends AppCompatActivity {
         }
         return true;
     }
-
 
 }

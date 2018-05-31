@@ -18,6 +18,8 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
+import gw.db.chi.nl.playerdbapp.dao.entities.Player;
+
 public class ShowAllActivity extends AppCompatActivity {
 
 //    private static final String DATABASE_NAME = "player-db";

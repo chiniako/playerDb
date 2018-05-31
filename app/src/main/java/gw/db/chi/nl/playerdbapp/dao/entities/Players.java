@@ -1,4 +1,4 @@
-package gw.db.chi.nl.playerdbapp;
+package gw.db.chi.nl.playerdbapp.dao.entities;
 
 import java.util.ArrayList;
 import java.util.Date;

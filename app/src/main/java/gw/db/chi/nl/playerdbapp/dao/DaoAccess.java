@@ -1,9 +1,11 @@
-package gw.db.chi.nl.playerdbapp;
+package gw.db.chi.nl.playerdbapp.dao;
 
 import android.content.ContentResolver;
 import android.net.Uri;
 
 import java.util.List;
+
+import gw.db.chi.nl.playerdbapp.dao.entities.Player;
 
 public interface DaoAccess {
 

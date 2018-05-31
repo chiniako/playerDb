@@ -10,6 +10,9 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import gw.db.chi.nl.playerdbapp.dao.entities.Player;
+import gw.db.chi.nl.playerdbapp.utils.OrmUtils;
+
 public class AddRecordActivity extends AppCompatActivity {
 
     @Override
@@ -26,6 +29,7 @@ public class AddRecordActivity extends AppCompatActivity {
                 if (!allFieldsFilled()) {
                     infoField.setText("The new record cannot be saved, all fields must be filled in!");
                 } else {
+
                     DbWrapper.daoAccess(AddRecordActivity.this).storeDbInLocalFile();
 
                     List<EditText> allFields = getAllFormFields();
@@ -38,7 +42,7 @@ public class AddRecordActivity extends AppCompatActivity {
                             allFields.get(1).getText().toString()
                     );
                     newPlayer.setJoinedDate(
-                            Long.valueOf(allFields.get(2).getText().toString())
+                            OrmUtils.dateStringToLong(allFields.get(2).getText().toString())
                     );
                     newPlayer.setEmail(
                             allFields.get(3).getText().toString()
@@ -46,7 +50,6 @@ public class AddRecordActivity extends AppCompatActivity {
                     DbWrapper.daoAccess(AddRecordActivity.this).insertOrUpdateSinglePlayer(newPlayer);
 
                     infoField.setText("Player record added/updated succesfully");
-
                 }
             }
         });
@@ -56,7 +59,7 @@ public class AddRecordActivity extends AppCompatActivity {
         cancelBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                AddRecordActivity.this.onBackPressed();
+            AddRecordActivity.this.onBackPressed();
             }
         });
 

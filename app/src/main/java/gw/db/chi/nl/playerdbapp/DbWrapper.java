@@ -23,6 +23,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import gw.db.chi.nl.playerdbapp.dao.DaoAccess;
+import gw.db.chi.nl.playerdbapp.dao.entities.Player;
+
 public class DbWrapper implements DaoAccess {
 
     final static String dbLocation = "";
